@@ -36,6 +36,8 @@ K = 3                   # Number of recommended items (among L >= K items)
 weights = [1./K] * K    # Multinomial distribution over rank stopping times
 # Stopping times for T rounds
 taus = map(lambda x: x+1, np.random.choice(K, T, p=weights))
+# Number of Monte Carlo repetitions
+N=100
 
 ## ARMS
 L = 11                  # Number of arms (items)
@@ -46,35 +48,60 @@ params = {
     "bernoulli": 0.6,
     "bernoulli": 0.58,
     "bernoulli": 0.2,
-    "beta": [0.5, 0.5],     # mean -> 0.5
-    "beta": [4., 3.],       # mean -> 0.571
-    "beta": [0.45, 0.34],   # mean -> 0.57
-    "beta": [2, 2],         # mean -> 0.5
-    "exp": 1.85185          # mean -> 0.54
+ #   "beta": [0.5, 0.5],     # mean -> 0.5
+ #   "beta": [4., 3.],       # mean -> 0.571
+ #  "beta": [0.45, 0.34],   # mean -> 0.57
+ #   "beta": [2, 2],         # mean -> 0.5
+ #   "exp": 1.85185          # mean -> 0.54
     }
 
-# Create an object of L arms (corresponds to model)
-arms = MAB(L, params=params)
-rewards = list()    # List of rewards obtained by the policy
+
+
+# Select policies to be evaluated => TODO : change prototypes to be able to evaluate several policies
+#Policies = "UCB"
 
 """
 Main algorithm
 """
+def Evaluation(arms):
+    # List of estimations for each arms (see EstimatedArm class)
+    estimations = EstimatedMAB(L)
+    
+    # List of rewards obtained by the policy
+    rewards = np.array(1,T)   
+    
+    # Initialization
+    for t in xrange(L):
+        # Initialization: we present lists A_t = [0, 1, 2], [1, 2, 3], ...
+        A_t = [(t+i)%L for i in xrange(K)]
+        round_reward = play(A_t, taus[t], arms, estimations)
+        #rewards.append(round_reward)
+        rewards[t]=round_reward
+    
+    for t in xrange(L, T):
+        estimations.computeUCBs()
+        A_t = estimations.selectArms(K)
+        round_reward = play(A_t, taus[t], arms, estimations)
+        #rewards.append(round_reward)
+        rewards[t]=round_reward
+    return rewards
 
-# List of estimations for each arms (see EstimatedArm class)
-estimations = EstimatedMAB(L)
-# Initialization
-for t in xrange(L):
-    # Initialization: we present lists A_t = [0, 1, 2], [1, 2, 3], ...
-    A_t = [(t+i)%L for i in xrange(K)]
-    round_reward = play(A_t, taus[t], arms, estimations)
-    rewards.append(round_reward)
+"""
+Experiments
+"""
+# Create an object of L arms (corresponds to model)
+arms = MAB(L, params=params)
 
-for t in xrange(L, T):
-    estimations.computeUCBs()
-    A_t = estimations.selectArms(K)
-    round_reward = play(A_t, taus[t], arms, estimations)
-    rewards.append(round_reward)
+# Repeat the experiment N times 
+# TODO : to it for each policy to be evaluated.
+
+MeanRewards=np.array(1,T)
+for nbExp in xrange(N)
+    rewards=Evaluation(arms)
+    MeanRewards=MeanRewards+rewards
+    
+MeanRewards=MeanRewards./N
+    
 
 """
 Plot here
