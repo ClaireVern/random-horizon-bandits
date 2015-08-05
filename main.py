@@ -24,6 +24,7 @@ def play(A_t, tau_t, arms, estimations):
     """
     round_reward = 0.
     for index in A_t[:tau_t]:
+        print index
         reward = arms.play(index)
         estimations.updateEstimatedArm(index, reward)
         round_reward += reward
@@ -40,14 +41,14 @@ taus = map(lambda x: x+1, np.random.choice(K, T, p=weights))
 N=100
 
 ## ARMS
-L = 11                  # Number of arms (items)
+L = 6                 # Number of arms (items)
 params = {
     "bernoulli": 0.5,
     "bernoulli": 0.55,
     "bernoulli": 0.45,
     "bernoulli": 0.6,
     "bernoulli": 0.58,
-    "bernoulli": 0.2,
+    "bernoulli": 0.2
  #   "beta": [0.5, 0.5],     # mean -> 0.5
  #   "beta": [4., 3.],       # mean -> 0.571
  #  "beta": [0.45, 0.34],   # mean -> 0.57
@@ -63,12 +64,12 @@ params = {
 """
 Main algorithm
 """
-def Evaluation(arms):
+def Evaluation(arms,taus):
     # List of estimations for each arms (see EstimatedArm class)
     estimations = EstimatedMAB(L)
     
     # List of rewards obtained by the policy
-    rewards = np.array(1,T)   
+    rewards = np.array((1,T))   
     
     # Initialization
     for t in xrange(L):
@@ -90,17 +91,17 @@ def Evaluation(arms):
 Experiments
 """
 # Create an object of L arms (corresponds to model)
-arms = MAB(L, params=params)
+mab = MAB(L, params=params)
 
 # Repeat the experiment N times 
 # TODO : to it for each policy to be evaluated.
 
-MeanRewards=np.array(1,T)
-for nbExp in xrange(N)
-    rewards=Evaluation(arms)
+MeanRewards=np.array((1,T))
+for nbExp in xrange(N):
+    rewards=Evaluation(arms,taus)
     MeanRewards=MeanRewards+rewards
     
-MeanRewards=MeanRewards./N
+MeanRewards=MeanRewards/N
     
 
 """
